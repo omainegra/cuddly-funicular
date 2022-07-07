@@ -1,6 +1,8 @@
 package com.example.composedemo
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.ComponentActivity
@@ -56,6 +58,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            dump(findViewById(android.R.id.content), PrintWriter(System.out))
+        }, 1000L)
     }
 
     override fun dump(
@@ -64,11 +70,16 @@ class MainActivity : ComponentActivity() {
         writer: PrintWriter,
         args: Array<out String>?
     ) {
-        val view: View = findViewById(android.R.id.content)
+        dump(findViewById(android.R.id.content), writer)
+    }
+
+    private fun dump(view: View, writer: PrintWriter) {
         val nodeInfo = view.createAccessibilityNodeInfo()
 
         try {
             dumpNode(nodeInfo, writer, "-")
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace(writer)
         } finally {
             writer.flush()
         }
