@@ -67,13 +67,19 @@ class MainActivity : ComponentActivity() {
         val view: View = findViewById(android.R.id.content)
         val nodeInfo = view.createAccessibilityNodeInfo()
 
-        dumpNode(nodeInfo, writer, "-")
+        try {
+            dumpNode(nodeInfo, writer, "-")
+        } finally {
+            writer.flush()
+        }
     }
 
     private fun dumpNode(nodeInfo: AccessibilityNodeInfo, writer: PrintWriter, prefix: String) {
-        writer.println("$prefix${nodeInfo.text}")
-
+        writer.println("$prefix text=${nodeInfo.text}")
         val n = nodeInfo.childCount
+
+        writer.println("$prefix childCount=$n")
+
         for (i in 0 until n) {
             val child = nodeInfo.getChild(i)
             dumpNode(child, writer, "$prefix-")
