@@ -1,5 +1,6 @@
 package com.example.composedemo
 
+import android.app.UiAutomation
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,28 +11,33 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
 import com.example.composedemo.ui.theme.ComposeDemoTheme
 import java.io.FileDescriptor
 import java.io.PrintWriter
 
 class MainActivity : ComponentActivity() {
+    @ExperimentalComposeUiApi
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val modifier = Modifier.semantics {
+                testTag = ""
+            }
             ComposeDemoTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().semantics { testTagsAsResourceId = true },
                     color = MaterialTheme.colorScheme.background
                 ) {
                     Column {
                         Text("Text 1")
 
-                        Button(onClick = {  }) {
+                        Button(modifier = Modifier.semantics { testTag = "button1" }, onClick = {  }) {
                             Text("Button 1")
                         }
 
@@ -39,6 +45,14 @@ class MainActivity : ComponentActivity() {
 
                         Button(onClick = {  }) {
                             Text("Button 2")
+                        }
+
+                        IconButton(
+                            modifier = Modifier
+                                .semantics(mergeDescendants = true) { contentDescription = "Add" },
+                            onClick = {  },
+                        ) {
+                            Icon(Icons.Filled.Add, contentDescription = null)
                         }
 
                         Row {
@@ -60,7 +74,7 @@ class MainActivity : ComponentActivity() {
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
-            dump(findViewById(android.R.id.content), PrintWriter(System.out))
+            dump(findViewById<View>(android.R.id.content), PrintWriter(System.out))
         }, 1000L)
     }
 
@@ -70,12 +84,14 @@ class MainActivity : ComponentActivity() {
         writer: PrintWriter,
         args: Array<out String>?
     ) {
-        dump(findViewById(android.R.id.content), writer)
+        dump(findViewById<View>(android.R.id.content), writer)
     }
 
     private fun dump(view: View, writer: PrintWriter) {
-        val nodeInfo = view.createAccessibilityNodeInfo()
+        dump(view.createAccessibilityNodeInfo(), writer)
+    }
 
+    private fun dump(nodeInfo: AccessibilityNodeInfo, writer: PrintWriter) {
         try {
             dumpNode(nodeInfo, writer, "-")
         } catch (e: java.lang.Exception) {
