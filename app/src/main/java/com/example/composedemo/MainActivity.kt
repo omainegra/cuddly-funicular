@@ -1,6 +1,5 @@
 package com.example.composedemo
 
-import android.app.UiAutomation
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -8,15 +7,23 @@ import android.view.View
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
 import com.example.composedemo.ui.theme.ComposeDemoTheme
 import java.io.FileDescriptor
 import java.io.PrintWriter
@@ -26,15 +33,17 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val modifier = Modifier.semantics {
-                testTag = ""
-            }
+            var checkbox1Checked by remember { mutableStateOf(false) }
+            var textFieldValue by remember { mutableStateOf("") }
+
             ComposeDemoTheme {
                 Surface(
-                    modifier = Modifier.fillMaxSize().semantics { testTagsAsResourceId = true },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .semantics { testTagsAsResourceId = true },
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Text 1")
 
                         Button(modifier = Modifier.semantics { testTag = "button1" }, onClick = {  }) {
@@ -47,15 +56,46 @@ class MainActivity : ComponentActivity() {
                             Text("Button 2")
                         }
 
-                        IconButton(
-                            modifier = Modifier
-                                .semantics(mergeDescendants = true) { contentDescription = "Add" },
-                            onClick = {  },
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Icon(Icons.Filled.Add, contentDescription = null)
+                            var count by remember { mutableStateOf(0) }
+
+                            IconButton(
+                                modifier = Modifier
+                                    .semantics(mergeDescendants = true) { contentDescription = "Add" },
+                                onClick = { count += 1 },
+                            ) {
+                                Icon(Icons.Filled.Add, contentDescription = null)
+                            }
+
+                            Text(modifier = Modifier.semantics { testTag = "counterText" }, text = "$count")
+
+                            IconButton(
+                                modifier = Modifier
+                                    .semantics(mergeDescendants = true) { contentDescription = "Minus" },
+                                onClick = { count -= 1 },
+                            ) {
+                                Icon(Icons.Filled.Remove, contentDescription = null)
+                            }
                         }
 
-                        Row {
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = checkbox1Checked,
+                                onCheckedChange = { checkbox1Checked = !checkbox1Checked },
+                            )
+                            Text("CheckBox 1")
+                        }
+
+                        BasicTextField(value = textFieldValue, onValueChange = { textFieldValue = it })
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
                             Text("Text 3")
 
                             Button(onClick = {  }) {
@@ -66,6 +106,16 @@ class MainActivity : ComponentActivity() {
 
                             Button(onClick = {  }) {
                                 Text("Button 4")
+                            }
+                        }
+
+                        LazyColumn(
+                            modifier = Modifier
+                                .size(300.dp)
+                                .semantics { contentDescription = "Items"},
+                        ) {
+                            items((1..1000).toList()) { item ->
+                                Text("Item: $item")
                             }
                         }
                     }
